@@ -166,8 +166,8 @@ public:
         return true;
     }
     primitive_type_id type() const { return _type; }
-    primitive_id id() const { return _id; }
-    primitive_id org_id() const { return _org_id; }
+    const primitive_id& id() const { return _id; }
+    const primitive_id& org_id() const { return _org_id; }
     bool can_be_optimized() const { return _can_be_optimized; }
     void set_can_be_optimized(bool optimized) {
         // TODO: consolidate to _impl_param in the future
