@@ -91,7 +91,7 @@ private:
     bool m_use_external_queue = false;
 
     void prepare_state(const std::string& name, const std::shared_ptr<VariableStateBase>& variable);
-    std::vector<cldnn::event::ptr> prepare_input(const std::string& internal_name,
+    cldnn::event::ptr prepare_input(const std::string& internal_name,
                                                  size_t input_idx,
                                                  const ov::Output<const ov::Node>& port,
                                                  const TensorWrapper& user_tensor_wrapper);

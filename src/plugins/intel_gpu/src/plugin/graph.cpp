@@ -744,10 +744,11 @@ std::shared_ptr<cldnn::network> Graph::get_network() const {
     return m_network;
 }
 
-std::vector<cldnn::primitive_id> Graph::input_port_index_to_internal(size_t input_port_index) const {
-    OPENVINO_ASSERT(inputPrimitiveIDs.count(input_port_index) != 0 && !inputPrimitiveIDs.at(input_port_index).empty(),
+const std::vector<cldnn::primitive_id>& Graph::input_port_index_to_internal(size_t input_port_index) const {
+    const auto it = inputPrimitiveIDs.find(input_port_index);
+    OPENVINO_ASSERT(it != inputPrimitiveIDs.end() && !it->second.empty(),
                     "[GPU] Internal name of input primitive not found at index ", input_port_index);
-    return inputPrimitiveIDs.at(input_port_index);
+    return it->second;
 }
 
 std::string Graph::out_port_index_to_internal(size_t out_port_index) const {

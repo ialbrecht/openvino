@@ -53,7 +53,7 @@ public:
     const std::map<size_t, cldnn::layout>& get_input_layouts() const { return m_input_layouts; }
     std::shared_ptr<cldnn::network> get_network() const;
 
-    std::vector<cldnn::primitive_id> input_port_index_to_internal(size_t input_port_index) const;
+    const std::vector<cldnn::primitive_id>& input_port_index_to_internal(size_t input_port_index) const;
     std::string out_port_index_to_internal(size_t out_port_index) const;
 
     void wait(Stage stage_mask) {

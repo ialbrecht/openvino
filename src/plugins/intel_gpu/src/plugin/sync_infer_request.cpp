@@ -255,9 +255,10 @@ void SyncInferRequest::enqueue() {
             auto events = prepare_batched_input(port_idx, port, m_batched_tensors.at(port.get_tensor_ptr()));
             std::move(events.begin(), events.end(), std::back_inserter(dependencies));
         } else {
-            cldnn::primitive_id internal_name = m_graph->input_port_index_to_internal(port_idx)[0];
-            auto events = prepare_input(internal_name, port_idx, port, m_user_inputs.at(port_idx));
-            std::move(events.begin(), events.end(), std::back_inserter(dependencies));
+            const cldnn::primitive_id& internal_name = m_graph->input_port_index_to_internal(port_idx)[0];
+            if (auto event = prepare_input(internal_name, port_idx, port, m_user_inputs.at(port_idx))) {
+                dependencies.emplace_back(std::move(event));
+            }
         }
     }
 
@@ -633,20 +634,22 @@ std::vector<cldnn::event::ptr> SyncInferRequest::prepare_batched_input(size_t in
             }
         }
 
-        auto events = prepare_input(internal_names[0], input_idx, port, {merged_tensor, TensorOwner::PLUGIN});
-        std::move(events.begin(), events.end(), std::back_inserter(ret_events));
+        if (auto event = prepare_input(internal_names[0], input_idx, port, {merged_tensor, TensorOwner::PLUGIN})) {
+            ret_events.emplace_back(std::move(event));
+        }
     } else {
         OPENVINO_ASSERT(user_tensors.size() == internal_names.size(), "[GPU] Internal names and user tensors size mismatch");
         for (size_t i = 0; i < user_tensors.size(); i++) {
-            auto events = prepare_input(internal_names[i], input_idx, port, {user_tensors[i]._ptr, TensorOwner::USER});
-            std::move(events.begin(), events.end(), std::back_inserter(ret_events));
+            if (auto event = prepare_input(internal_names[i], input_idx, port, {user_tensors[i]._ptr, TensorOwner::USER})) {
+                ret_events.emplace_back(std::move(event));
+            }
         }
     }
 
     return ret_events;
 }
 
-std::vector<cldnn::event::ptr> SyncInferRequest::prepare_input(const std::string& internal_name,
+cldnn::event::ptr SyncInferRequest::prepare_input(const std::string& internal_name,
                                                                size_t input_idx,
                                                                const ov::Output<const ov::Node>& port,
                                                                const TensorWrapper& user_tensor_wrapper) {
@@ -791,9 +794,9 @@ std::vector<cldnn::event::ptr> SyncInferRequest::prepare_input(const std::string
     network->set_input_data(internal_name, memory);
 
     if (ret_event && !ret_event->is_set())
-        return { ret_event };
+        return ret_event;
     else
-        return {};
+        return nullptr;
 }
 
 std::vector<cldnn::event::ptr> SyncInferRequest::prepare_output(size_t output_idx,
