@@ -524,16 +524,16 @@ void SyncInferRequest::allocate_input(const ov::Output<const ov::Node>& port, si
     const auto& shape = port.get_partial_shape();
     auto element_type = port.get_element_type();
 
-    m_user_inputs[input_idx] = { create_host_tensor(shape, element_type), TensorOwner::PLUGIN };
-    ov::ISyncInferRequest::set_tensor(port, m_user_inputs.at(input_idx).ptr);
+    const auto it = m_user_inputs.insert_or_assign(input_idx, TensorWrapper{ create_host_tensor(shape, element_type), TensorOwner::PLUGIN });
+    ov::ISyncInferRequest::set_tensor(port, it.first->second.ptr);
 }
 
 void SyncInferRequest::allocate_output(const ov::Output<const ov::Node>& port, size_t output_idx) {
     const auto& shape = port.get_partial_shape();
     auto element_type = port.get_element_type();
 
-    m_user_outputs[output_idx] = { create_host_tensor(shape, element_type), TensorOwner::PLUGIN };
-    ov::ISyncInferRequest::set_tensor(port, m_user_outputs.at(output_idx).ptr);
+    const auto it = m_user_outputs.insert_or_assign(output_idx, TensorWrapper{ create_host_tensor(shape, element_type), TensorOwner::PLUGIN });
+    ov::ISyncInferRequest::set_tensor(port, it.first->second.ptr);
 }
 
 void SyncInferRequest::allocate_inputs() {
