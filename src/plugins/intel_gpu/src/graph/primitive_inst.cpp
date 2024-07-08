@@ -1365,7 +1365,8 @@ event::ptr primitive_inst::execute(const std::vector<event::ptr>& events) {
     GPU_DEBUG_TRACE_DETAIL << "-----------------------------------------------------------------" << std::endl;
     bool need_args_update = false;
     _mem_changed = false;
-    const auto orig_outputs = _outputs;
+    const auto check_mem_changed = !_node->is_type<condition>() && !_node->is_type<loop>();
+    const auto orig_outputs = check_mem_changed ? _outputs : std::vector<cldnn::memory::ptr>{};
     std::vector<event::ptr> dependencies;
     if ((is_dynamic() || _node->is_in_shape_of_subgraph()) && !has_inner_networks()) {
         do_runtime_in_place_concat();
@@ -1472,7 +1473,7 @@ event::ptr primitive_inst::execute(const std::vector<event::ptr>& events) {
     }
     on_execute();
 
-    if (!_node->is_type<condition>() && !_node->is_type<loop>()) {
+    if (check_mem_changed) {
         for (size_t i = 0; i < _outputs.size(); ++i) {
             if ((!orig_outputs[i] && _outputs[i]) || (orig_outputs[i] && !_outputs[i])) {
                 _mem_changed = true;
