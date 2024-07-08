@@ -44,12 +44,12 @@ Graph::Graph(std::shared_ptr<ov::Model> model, const RemoteContextImpl::Ptr& con
 
     build(program_builder->get_compiled_program());
 
-    primitiveIDs = program_builder->primitive_ids;
-    inputPrimitiveIDs = program_builder->inputPrimitiveIDs;
-    prevPrimitiveIDs = program_builder->prevPrimitiveIDs;
+    primitiveIDs = std::unordered_map<std::string, cldnn::primitive_id>(program_builder->primitive_ids.begin(), program_builder->primitive_ids.end());
+    inputPrimitiveIDs = std::unordered_map<size_t, std::vector<cldnn::primitive_id>>(program_builder->inputPrimitiveIDs.begin(), program_builder->inputPrimitiveIDs.end());
+    prevPrimitiveIDs = std::unordered_map<size_t, cldnn::primitive_id>(program_builder->prevPrimitiveIDs.begin(), program_builder->prevPrimitiveIDs.end());
     profilingIDs = program_builder->profiling_ids;
-    perfMap = program_builder->perfMap;
-    m_input_layouts = program_builder->get_input_layouts();
+    perfMap = std::unordered_map<cldnn::primitive_id, std::pair<std::string, PerfCounter>>(program_builder->perfMap.begin(), program_builder->perfMap.end());
+    m_input_layouts = std::unordered_map<size_t, cldnn::layout>(program_builder->get_input_layouts().begin(), program_builder->get_input_layouts().end());
 }
 
 Graph::Graph(cldnn::BinaryInputBuffer &ib, const RemoteContextImpl::Ptr& context, const ExecutionConfig& config, uint16_t stream_id)

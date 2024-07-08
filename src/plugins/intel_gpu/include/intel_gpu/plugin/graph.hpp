@@ -50,7 +50,7 @@ public:
     cldnn::engine& get_engine() const { return m_context->get_engine(); }
     const ExecutionConfig& get_config() const { return m_config; }
 
-    const std::map<size_t, cldnn::layout>& get_input_layouts() const { return m_input_layouts; }
+    const std::unordered_map<size_t, cldnn::layout>& get_input_layouts() const { return m_input_layouts; }
     std::shared_ptr<cldnn::network> get_network() const;
 
     const std::vector<cldnn::primitive_id>& input_port_index_to_internal(size_t input_port_index) const;
@@ -84,14 +84,14 @@ private:
     std::mutex m_infer_mutex;
 
     std::shared_ptr<cldnn::network> m_network;
-    std::map<std::string, cldnn::primitive_id> primitiveIDs;
-    std::map<size_t, std::vector<cldnn::primitive_id>> inputPrimitiveIDs;
-    std::map<size_t, cldnn::primitive_id> prevPrimitiveIDs;
+    std::unordered_map<std::string, cldnn::primitive_id> primitiveIDs;
+    std::unordered_map<size_t, std::vector<cldnn::primitive_id>> inputPrimitiveIDs;
+    std::unordered_map<size_t, cldnn::primitive_id> prevPrimitiveIDs;
 
-    std::map<cldnn::primitive_id, std::pair<std::string, PerfCounter>> perfMap;
+    std::unordered_map<cldnn::primitive_id, std::pair<std::string, PerfCounter>> perfMap;
     std::vector<cldnn::primitive_id> profilingIDs;
 
-    std::map<size_t, cldnn::layout> m_input_layouts;
+    std::unordered_map<size_t, cldnn::layout> m_input_layouts;
 
     void build(std::shared_ptr<cldnn::program> program);
     std::shared_ptr<ov::Model> get_runtime_model(std::vector<cldnn::primitive_info>& pi, bool filter_const_primitives = true);
